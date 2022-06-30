@@ -1,6 +1,7 @@
 use egui::Checkbox;
 use egui_backend::{egui, gl, sdl2};
 use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
+use glm::Mat4;
 use resources::Resources;
 use std::ffi::{CStr, CString};
 use std::path::Path;
@@ -9,7 +10,11 @@ use std::time::Instant;
 use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
 use render::data;
+use nalgebra_glm as glm;
 
+use render::buffer;
+
+#[macro_use] extern crate render_derive;
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
@@ -17,31 +22,14 @@ const SCREEN_HEIGHT: u32 = 600;
 mod render;
 mod resources;
 
+#[derive(VertexAttribPointers)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
 struct Vertex {
-    pos: data::f32x3,
-    clr: data::f32x3,
-}
-
-impl Vertex {
-    fn vertex_attrib_pointers() {
-        let stride = std::mem::size_of::<Self>(); // byte offset between consecutive attributes
-
-        let location = 0; // layout (location = 0)
-        let offset = 0; // offset of the first component
-
-        unsafe {
-            data::f32_f32_f32::vertex_attrib_pointer( stride, location, offset);
-        }
-
-        let location = 1; // layout (location = 1)
-        let offset = offset + std::mem::size_of::<data::f32_f32_f32>(); // offset of the first component
-
-        unsafe {
-            data::f32_f32_f32::vertex_attrib_pointer(stride, location, offset);
-        }
-    }
+    #[location = 0]
+    pos: data::f32_f32_f32,
+    #[location = 1]
+    clr: data::f32_f32_f32,
 }
 
 
@@ -86,6 +74,8 @@ fn main() {
     let mut quit = false;
     let mut slider = 0.0;
 
+//    let projection: Mat4 = glm::ortho(0.0, 800.0, 600.0, 0.0, -1.0, 1.0);  
+
     window
         .subsystem()
         .gl_set_swap_interval(SwapInterval::VSync)
@@ -100,38 +90,23 @@ fn main() {
         Vertex { pos: (0.0,  0.5, 0.0).into(),  clr: (0.0, 0.0, 1.0).into() }  // top
     ];
     
-    let mut vbo: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut vbo);
-    }
 
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,                                                       // target
-            (vertices.len() * std::mem::size_of::<Vertex>()) as gl::types::GLsizeiptr, // size of data in bytes
-            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-            gl::STATIC_DRAW,                               // usage
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    }
+    let vbo = buffer::VertexBuffer::new();
+    let vao = buffer::VertexArray::new();  // changed
+    println!("creados ");
+    vbo.bind();
+    vbo.upload_data_static_draw(&vertices);
+    vbo.unbind();
 
     // set up vertex array object
+    println!("buffer uploadeado");
 
-    let mut vao: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-    }
-
-    unsafe {
-        gl::BindVertexArray(vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-
-        Vertex::vertex_attrib_pointers();
-
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
-    }
+    vao.bind();                               
+    vbo.bind();                               
+    Vertex::vertex_attrib_pointers();
+    vbo.unbind();                             
+    vao.unbind();                             
+    println!("attrib pointers crea2");
 
     // set up shared state for window
 
@@ -140,17 +115,17 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    
-
     let start_time = Instant::now();
+    let mut frame_time = Instant::now();
     'running: loop {
+
         egui_state.input.time = Some(start_time.elapsed().as_secs_f64());
         egui_ctx.begin_frame(egui_state.input.take());
 
         egui::CentralPanel::default().show(&egui_ctx, |ui| {
             ui.label(" ");
             ui.text_edit_multiline(&mut test_str);
-            ui.label(" ");
+            ui.label(format!("frame time:{}",frame_time.elapsed().as_millis()));
             ui.add(egui::Slider::new(&mut slider, 0.0..=50.0).text("Slider"));
             ui.label(" ");
             ui.add(Checkbox::new(&mut enable_vsync, "Enable vsync?"));
@@ -159,6 +134,8 @@ fn main() {
                 quit = true;
             }
         });
+
+        frame_time = Instant::now();
 
         let (egui_output, paint_cmds) = egui_ctx.end_frame();
         // Process ouput
@@ -192,15 +169,24 @@ fn main() {
                 }
             }
         }
+
         shader_program.set_used();
+        vao.bind();
+        println!("rebindeado vao");
+
         unsafe {
-            gl::BindVertexArray(vao);
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
                 0,             // starting index in the enabled arrays
                 3,             // number of indices to be rendered
             );
         }
+
+        println!("reunbindeando vao");
+
+        vao.unbind();
+        println!("reunbindeada vao");
+
         window.gl_swap_window();
         if quit {
             break 'running;

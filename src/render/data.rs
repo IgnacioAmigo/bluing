@@ -1,6 +1,9 @@
 use gl;
-pub type f32x3 = f32_f32_f32;
+trait AttributedVertex {
+    fn vertex_attrib_pointer(stride:usize, location: usize, offset: usize);
+}
 
+pub type f32x3 = f32_f32_f32;
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]

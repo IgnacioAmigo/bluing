@@ -3,6 +3,10 @@ use std::fs;
 use std::io::{self,Read};
 use std::ffi;
 
+use sdl2::sys::Uint32;
+use stb_image::{self, image};
+use stb_image::image::LoadResult;
+
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
@@ -46,6 +50,14 @@ impl Resources {
         }
 
         Ok(unsafe { ffi::CString::from_vec_unchecked(buffer) })
+    }
+
+    // todo: dumb return struct
+    pub fn load_image(&self, resource_name: &Path) -> Result<(usize,usize,Vec<u8>), &str> {
+        match stb_image::image::load(resource_name) {
+            LoadResult::ImageU8(image_data) =>  Ok((image_data.width,image_data.height,image_data.data)),
+            _ => Err("Error loading image; incorrect format?")
+        }
     }
 
     fn resource_name_to_path(root_dir: &Path, location: &str) -> PathBuf {

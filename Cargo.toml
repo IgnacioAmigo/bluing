@@ -10,6 +10,9 @@ sdl2 = "*"
 gl = "0.14"
 egui = "*"
 egui_sdl2_gl = "*"
+stb_image = "*"
+nalgebra-glm = "*" 
+render_derive = { path = "render_derive" }
 
 [build-dependencies]
 walkdir = "*"
