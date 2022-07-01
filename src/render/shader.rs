@@ -2,6 +2,8 @@ use gl;
 use std;
 use std::ffi::{CString, CStr};
 use crate::resources::{Resources};
+use nalgebra_glm as glm;
+
 pub struct Shader {
     id: gl::types::GLuint,
 }
@@ -18,9 +20,11 @@ impl Shader {
     pub fn frag_shader_from_source(source: &CStr) -> Result<Shader, String> {
         Shader::from_source(source, gl::FRAGMENT_SHADER)
     } 
+
     pub fn id(&self) -> gl::types::GLuint {
         self.id
     }
+
     pub fn from_res(res: &Resources, name: &str) -> Result<Shader, String> {
         
         // TODO: this should not panic, and instead print to console or debug log 
@@ -31,6 +35,7 @@ impl Shader {
         let source = res.load_cstring(name).expect("Error loading shader");
         Shader::from_source(&source, shader_type)
     }
+
 }
 impl Drop for Shader {
     fn drop(&mut self) {

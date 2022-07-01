@@ -10,6 +10,7 @@
     mod texture;
     pub mod data;
     pub mod buffer;
+    pub mod renderer;
 
     const EXTENSIONS: [(&str,gl::types::GLenum); 2] = [(".vert", gl::VERTEX_SHADER),(".frag", gl::FRAGMENT_SHADER)];
 
@@ -80,7 +81,20 @@
                     gl::UseProgram(self.id);
                 }
             }
+         
+            pub fn set_float(&self, name: &CStr, value: f32) {
+                unsafe { gl::Uniform1f(gl::GetUniformLocation(self.id , name.as_ptr()),value); }
+            }
             
+            // todo: value by ref or copy?
+            pub fn set_vector3f(&self, name: &CStr, value: glm::Vec3) {
+                unsafe { gl::Uniform3f(gl::GetUniformLocation(self.id , name.as_ptr()),value.x, value.y, value.z); }
+            }
+
+            // todo: arguments here should be reviewed (value_ptr overhead? how does it relate to transpose arg?)
+            pub fn set_mat4(&self, name: &CStr, matrix: glm::Mat4) {
+                unsafe { gl::UniformMatrix4fv(gl::GetUniformLocation(self.id , name.as_ptr()), 1, gl::FALSE, glm::value_ptr(&matrix).as_ptr()); }
+            }
         }
         
         impl Drop for GlProgram {

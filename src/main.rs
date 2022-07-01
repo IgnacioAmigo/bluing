@@ -10,6 +10,7 @@ use std::time::Instant;
 use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
 use render::data;
+use render::data::AttributedVertex;
 use nalgebra_glm as glm;
 
 use render::buffer;
@@ -49,7 +50,6 @@ fn main() {
             SCREEN_HEIGHT,
         )
         .opengl()
-        //.resizable()
         .build()
         .unwrap();
 
@@ -90,28 +90,24 @@ fn main() {
         Vertex { pos: (0.0,  0.5, 0.0).into(),  clr: (0.0, 0.0, 1.0).into() }  // top
     ];
     
-
     let vbo = buffer::VertexBuffer::new();
     let vao = buffer::VertexArray::new();  // changed
-    println!("creados ");
     vbo.bind();
     vbo.upload_data_static_draw(&vertices);
     vbo.unbind();
 
     // set up vertex array object
-    println!("buffer uploadeado");
 
     vao.bind();                               
     vbo.bind();                               
     Vertex::vertex_attrib_pointers();
     vbo.unbind();                             
     vao.unbind();                             
-    println!("attrib pointers crea2");
 
     // set up shared state for window
 
     unsafe {
-        gl::Viewport(0, 0, 900, 700);
+        gl::Viewport(0, 0, SCREEN_WIDTH as i32, SCREEN_HEIGHT as i32);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
@@ -172,8 +168,6 @@ fn main() {
 
         shader_program.set_used();
         vao.bind();
-        println!("rebindeado vao");
-
         unsafe {
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
@@ -181,11 +175,7 @@ fn main() {
                 3,             // number of indices to be rendered
             );
         }
-
-        println!("reunbindeando vao");
-
         vao.unbind();
-        println!("reunbindeada vao");
 
         window.gl_swap_window();
         if quit {
