@@ -25,39 +25,50 @@ impl SpriteRenderer {
             SpriteVertex { postex: (0.0, 1.0, 0.0, 1.0,).into()}, // bottom right
             SpriteVertex { postex: (1.0, 0.0, 1.0, 0.0).into()}, // bottom left
             SpriteVertex { postex: (0.0,  0.0, 0.0, 0.0).into()},  // top
-
+            
             SpriteVertex { postex: (0.0,  1.0, 0.0, 1.0).into()},  // top
             SpriteVertex { postex: (1.0,  1.0, 1.0, 1.0).into()},  // top
             SpriteVertex { postex: (1.0,  0.0, 1.0, 0.0).into()},  // top
-        ];
-
+            ];
+            
+        let program = GlProgram::from_res(res,"shaders/texture2d")?;
         let vbo: VertexBuffer = VertexBuffer::new();
         let vao = VertexArray::new();
+        program.set_used();
 
         vbo.bind();
         vbo.upload_data_static_draw(&vertices);
+        vbo.unbind();
 
         vao.bind();
+        vbo.bind();
         SpriteVertex::vertex_attrib_pointers();
         vbo.unbind();
         vao.unbind();
 
-        let program = GlProgram::from_res(res,"assets/shaders/texture2d")?;
+
+        program.set_mat4(&CString::new("projection").expect("convert to cstr"), glm::ortho(0.0, 800.0, 600.0, 0.0, -1.0, 1.0));
+        program.set_integer(&CString::new("image").expect("convert to cstr"), 0);
 
         Ok(SpriteRenderer{program, vao, vbo})
     }
 
-    pub fn render(&self, texture: Texture, x: f32, y: f32, rotation_angle: f32) {
+    pub fn render(&self, texture: &Texture, x: f32, y: f32, rotation_angle: f32, color: glm::Vec3) {
         self.program.set_used();
-        let model = glm::Mat4::new();
-        model = glm::translate(&model,&glm::vec3(x,y,0.0));
-        model = glm::translate(&model,&glm::vec3(texture.width_f() * 0.5, texture.height_f() * 0.5,0.0));
-       // model = glm::rotate(&model,glm::radians(rotation_angle),glm::vec3(0.0, 0.0, 1.0));
-        //model = glm::translate(&model,&glm::vec3(-texture.width_f() * 0.5,- texture.height_f() * 0.5,0.0));
+       let model = glm::Mat4::identity();
+        let model = glm::translate(&model,&glm::vec3(x,y,0.0));
+        let model = glm::translate(&model,&glm::vec3(texture.width_f() * 0.5, texture.height_f() * 0.5,0.0));
+        //let model = glm::rotate(&model,glm::radians(24.2),glm::vec3(0.0, 0.0, 1.0));
+        let model = glm::scale(&model,&glm::vec3(250.0,357.0,0.0));
+        self.program.set_mat4(&CString::new("model").expect("convert to cstr"), model);
+        self.program.set_vector3f(&CString::new("spriteColor").expect("convert to cstr"), color);
 
-        self.program.set_mat4("asd"., model);
-        self.program.SetVector3f("spriteColor", color);
-    
+        
+        texture.bind();
+        self.vao.bind();
+        unsafe {gl::ActiveTexture(gl::TEXTURE0);}
+        unsafe { gl::DrawArrays(gl::TRIANGLES,0,6); }
+        self.vao.unbind();
     }
 
     pub fn init(&self) {

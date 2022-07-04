@@ -1,4 +1,5 @@
 use std::ffi::c_void;
+use gl::types::{GLint, GLuint};
 
 use gl;
 // https://learnopengl.com/code_viewer_gh.php?code=src/7.in_practice/3.2d_game/0.full_source/texture.h 
@@ -19,29 +20,41 @@ impl Texture {
     pub fn width(&self) -> usize { self.width }
     pub fn height(&self) -> usize { self.height }
 
-
     pub fn width_f(&self) -> f32 { self.width as f32 }
     pub fn height_f(&self) -> f32 { self.height as f32 }
 
+    pub fn id(&self ) -> gl::types::GLuint { self.id }
 
     pub fn from_data(data: Vec<u8>, width: usize, height: usize) -> Result<Texture, String> {
-        let mut texture = Texture::new(width, height);
+        let texture = Texture::new(width, height);
+        print!("id of texture is {}", texture.id);
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, texture.id);
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, width as i32, height as i32, 0, gl::RGB, gl::UNSIGNED_BYTE, data.as_ptr() as *const gl::types::GLvoid);
-
+            
+            // gl::ActiveTexture(gl::TEXTURE0);
+            
+            // todo: image data should be freed here, probably
+            
             // set Texture wrap and filter modes
-            gl::TextureParameterIuiv(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, &gl::CLAMP_TO_EDGE);
-            gl::TextureParameterIuiv(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, &gl::CLAMP_TO_EDGE);
-            gl::TextureParameterIuiv(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,& gl::LINEAR);
-            gl::TextureParameterIuiv(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, &gl::LINEAR);
-
+            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::MIRRORED_REPEAT as GLint);
+            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::MIRRORED_REPEAT as GLint);
+            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,gl::LINEAR as GLint);
+            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width as i32, height as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, data.as_ptr() as *const gl::types::GLvoid);
+            gl::GenerateMipmap(gl::TEXTURE_2D);
             // unbind texture
-            gl::BindTexture(gl::TEXTURE_2D, 0);
+           // gl::BindTexture(gl::TEXTURE_2D, 0);
         }
 
         Ok(texture)
+    } 
+
+    pub fn bind(&self) {
+        unsafe { gl::BindTexture(gl::TEXTURE_2D, self.id); }
     }
 
+    pub fn unbind(&self) {
+        unsafe { gl::BindTexture(gl::TEXTURE_2D, 0); }
+    }
 
 }

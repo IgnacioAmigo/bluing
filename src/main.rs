@@ -2,6 +2,7 @@ use egui::Checkbox;
 use egui_backend::{egui, gl, sdl2};
 use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
 use glm::Mat4;
+use render::renderer::SpriteRenderer;
 use resources::Resources;
 use std::ffi::{CStr, CString};
 use std::path::Path;
@@ -9,7 +10,7 @@ use std::time::Instant;
 // Alias the backend to something less mouthful
 use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
-use render::data;
+use render::{data, texture};
 use render::data::AttributedVertex;
 use nalgebra_glm as glm;
 
@@ -40,7 +41,7 @@ fn main() {
     {
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-        gl_attr.set_context_version(4, 5);
+        gl_attr.set_context_version(3, 3);
     }
 
     let window = video
@@ -53,7 +54,6 @@ fn main() {
         .build()
         .unwrap();
 
-     
     // Create a window context
     let _ctx = window.gl_create_context().unwrap();
     // Init egui stuff
@@ -83,6 +83,11 @@ fn main() {
 
     let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
     let shader_program = render::GlProgram::from_res(&res, "shaders/triangle").expect("Failed to load triangle shader asset");
+
+    let sprite_renderer = SpriteRenderer::from_res(&res).expect("error creating sprite renderer");
+
+    let sprite_data = res.load_image("sprites/test.png").expect("error loading sprite into bytes");
+    let texture = texture::Texture::from_data(sprite_data.2,sprite_data.0,sprite_data.1).expect("creating texture threw error");
 
     let vertices: Vec<Vertex> = vec![
         Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
@@ -169,13 +174,15 @@ fn main() {
         shader_program.set_used();
         vao.bind();
         unsafe {
-            gl::DrawArrays(
-                gl::TRIANGLES, // mode
-                0,             // starting index in the enabled arrays
-                3,             // number of indices to be rendered
-            );
+             gl::DrawArrays(
+                 gl::TRIANGLES, // mode
+                 0,             // starting index in the enabled arrays
+                 3,             // number of indices to be rendered
+             );
         }
         vao.unbind();
+
+        sprite_renderer.render(&texture, 1.9, 0.3, 1.0, glm::vec3(1.0,1.0,1.0));
 
         window.gl_swap_window();
         if quit {

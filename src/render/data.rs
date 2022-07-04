@@ -7,13 +7,13 @@ pub trait AttributedVertex {
             location as gl::types::GLuint,
             Self::amount_of_components(), // the number of components per generic vertex attribute
             gl::FLOAT, // data type
-            gl::TRUE, // normalized (int-to-float conversion)
+            gl::FALSE, // normalized (int-to-float conversion)
             stride as gl::types::GLint,
             offset as *const gl::types::GLvoid
         );
     }
 
-    fn amount_of_components() -> i32 {panic!("amount of components not defined for type"); }
+    fn amount_of_components() -> i32 {panic!("amount of components not defined for type (this is the default trait implementation)"); }
 }
 
 #[allow(non_camel_case_types)]

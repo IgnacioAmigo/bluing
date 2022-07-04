@@ -4,6 +4,7 @@ use std::io::{self,Read};
 use std::ffi;
 
 use sdl2::sys::Uint32;
+use stb_image::stb_image::bindgen::stbi_set_flip_vertically_on_load;
 use stb_image::{self, image};
 use stb_image::image::LoadResult;
 
@@ -53,9 +54,11 @@ impl Resources {
     }
 
     // todo: dumb return struct
-    pub fn load_image(&self, resource_name: &Path) -> Result<(usize,usize,Vec<u8>), &str> {
-        match stb_image::image::load(resource_name) {
+    pub fn load_image(&self, resource_name: &str) -> Result<(usize,usize,Vec<u8>), &str> {
+        //unsafe {stbi_set_flip_vertically_on_load(1)};
+        match stb_image::image::load(Resources::resource_name_to_path(&self.root_path,resource_name)) {
             LoadResult::ImageU8(image_data) =>  Ok((image_data.width,image_data.height,image_data.data)),
+            //LoadResult::ImageF32(image_data) =>  Ok((image_data.width,image_data.height,vec![])),
             _ => Err("Error loading image; incorrect format?")
         }
     }
