@@ -4,6 +4,8 @@ use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
 use glm::Mat4;
 use render::renderer::SpriteRenderer;
 use resources::Resources;
+use sdl2::mouse::{MouseState, self};
+use sdl2::sys::{SDL_GetMouseState, SDL_PumpEvents};
 use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::time::Instant;
@@ -34,8 +36,9 @@ struct Vertex {
     clr: data::f32_f32_f32,
 }
 
-
 fn main() {
+    let mut sprite_pos = (0,0);
+
     let sdl_context = sdl2::init().unwrap();
     let video = sdl_context.video().unwrap();
     {
@@ -43,6 +46,7 @@ fn main() {
         gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
         gl_attr.set_context_version(3, 3);
     }
+    let mut i = 0.0;
 
     let window = video
         .window(
@@ -74,8 +78,6 @@ fn main() {
     let mut quit = false;
     let mut slider = 0.0;
 
-//    let projection: Mat4 = glm::ortho(0.0, 800.0, 600.0, 0.0, -1.0, 1.0);  
-
     window
         .subsystem()
         .gl_set_swap_interval(SwapInterval::VSync)
@@ -86,8 +88,7 @@ fn main() {
 
     let sprite_renderer = SpriteRenderer::from_res(&res).expect("error creating sprite renderer");
 
-    let sprite_data = res.load_image("sprites/test.png").expect("error loading sprite into bytes");
-    let texture = texture::Texture::from_data(sprite_data.2,sprite_data.0,sprite_data.1).expect("creating texture threw error");
+    let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
 
     let vertices: Vec<Vertex> = vec![
         Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
@@ -144,24 +145,14 @@ fn main() {
 
         let paint_jobs = egui_ctx.tessellate(paint_cmds);
 
-        // draw triangle
-
-
-        if !egui_output.needs_repaint {
-            if let Some(event) = event_pump.wait_event_timeout(5) {
-                match event {
-                    Event::Quit { .. } => break 'running,
-                    _ => {
-                        // Process input event
-                        egui_state.process_input(&window, event, &mut painter);
-                    }
-                }
-            }
-        } else {
+        {
             painter.paint_jobs(None, paint_jobs, &egui_ctx.font_image());
             
             for event in event_pump.poll_iter() {
                 match event {
+                    Event::MouseMotion { x, y , mousestate ,  ..} => {
+                        egui_state.process_input(&window, event, &mut painter);
+                    },
                     Event::Quit { .. } => break 'running,
                     _ => {
                         // Process input event
@@ -182,7 +173,8 @@ fn main() {
         }
         vao.unbind();
 
-        sprite_renderer.render(&texture, 1.9, 0.3, 1.0, glm::vec3(1.0,1.0,1.0));
+        i = i + 0.3;
+        sprite_renderer.render(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3);
 
         window.gl_swap_window();
         if quit {

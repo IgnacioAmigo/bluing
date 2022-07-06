@@ -10,7 +10,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    fn new( width: usize, height: usize) -> Texture {
+    pub fn new(width: usize, height: usize) -> Texture {
         let mut id = 0;
         unsafe {gl::GenTextures(1,&mut id);}
 
@@ -31,7 +31,7 @@ impl Texture {
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, texture.id);
             
-            // gl::ActiveTexture(gl::TEXTURE0);
+            gl::ActiveTexture(gl::TEXTURE0);
             
             // todo: image data should be freed here, probably
             
@@ -39,11 +39,12 @@ impl Texture {
             gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::MIRRORED_REPEAT as GLint);
             gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::MIRRORED_REPEAT as GLint);
             gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,gl::LINEAR as GLint);
+            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0 as GLint);
             gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width as i32, height as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, data.as_ptr() as *const gl::types::GLvoid);
             gl::GenerateMipmap(gl::TEXTURE_2D);
             // unbind texture
-           // gl::BindTexture(gl::TEXTURE_2D, 0);
+            gl::BindTexture(gl::TEXTURE_2D, 0);
         }
 
         Ok(texture)

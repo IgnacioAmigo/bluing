@@ -96,9 +96,9 @@
             }
 
             // todo: arguments here should be reviewed (value_ptr overhead? how does it relate to transpose arg?)
-            pub fn set_mat4(&self, name: &CStr , matrix: glm::Mat4) {
+            pub fn set_mat4(&self, name: *const u8 , matrix: glm::Mat4) {
                 unsafe { 
-                    gl::UniformMatrix4fv(gl::GetUniformLocation(self.id , name.as_ptr()), 1, gl::FALSE, glm::value_ptr(&matrix).as_ptr()); 
+                    gl::UniformMatrix4fv(gl::GetUniformLocation(self.id , name as *const i8), 1, gl::FALSE, glm::value_ptr(&matrix).as_ptr()); 
                 }
             }
         }
