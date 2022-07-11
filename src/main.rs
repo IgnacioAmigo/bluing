@@ -89,6 +89,7 @@ fn main() {
     let sprite_renderer = SpriteRenderer::from_res(&res).expect("error creating sprite renderer");
 
     let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
+    let map = res.load_texture("tiles/grass.png").expect("error loading test.png to texture");
 
     let vertices: Vec<Vertex> = vec![
         Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
@@ -174,7 +175,9 @@ fn main() {
         vao.unbind();
 
         i = i + 0.3;
-        sprite_renderer.render(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3);
+        let tile = 12;
+        sprite_renderer.render(&map, 200.0 as f32, 100 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 1.0, glm::vec4((16.0/map.width_f()) * 12 as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
+        sprite_renderer.render(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
         window.gl_swap_window();
         if quit {

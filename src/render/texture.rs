@@ -32,17 +32,18 @@ impl Texture {
             gl::BindTexture(gl::TEXTURE_2D, texture.id);
             
             gl::ActiveTexture(gl::TEXTURE0);
-            
+            //https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml#:~:text=to%20GL_REPEAT.-,Notes,-Suppose%20that%20a
             // todo: image data should be freed here, probably
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width as i32, height as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, data.as_ptr() as *const gl::types::GLvoid);
             
             // set Texture wrap and filter modes
-            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::MIRRORED_REPEAT as GLint);
-            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::MIRRORED_REPEAT as GLint);
-            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,gl::LINEAR as GLint);
-            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0 as GLint);
-            gl::TextureParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width as i32, height as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, data.as_ptr() as *const gl::types::GLvoid);
-            gl::GenerateMipmap(gl::TEXTURE_2D);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::MIRRORED_REPEAT as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::MIRRORED_REPEAT as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER,gl::NEAREST as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0 as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+
+            //gl::GenerateMipmap(gl::TEXTURE_2D);
             // unbind texture
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }

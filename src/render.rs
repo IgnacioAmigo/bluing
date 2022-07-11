@@ -86,13 +86,17 @@
                 unsafe { gl::Uniform1f(gl::GetUniformLocation(self.id , name as *const i8),value); }
             }
 
-            pub fn set_integer(&self, name: &CStr , value: i32) {
-                unsafe { gl::Uniform1i(gl::GetUniformLocation(self.id , name.as_ptr()),value); }
+            pub fn set_integer(&self, name: *const u8 , value: i32) {
+                unsafe { gl::Uniform1i(gl::GetUniformLocation(self.id , name as *const i8),value); }
             }
             
             // todo: value by ref or copy?
-            pub fn set_vector3f(&self, name: &CStr , value: glm::Vec3) {
-                unsafe { gl::Uniform3f(gl::GetUniformLocation(self.id , name.as_ptr()),value.x, value.y, value.z); }
+            pub fn set_vector3f(&self, name: *const u8 , value: glm::Vec3) {
+                unsafe { gl::Uniform3f(gl::GetUniformLocation(self.id , name as *const i8),value.x, value.y, value.z); }
+            }
+
+            pub fn set_vector4f(&self, name: *const u8 , value: glm::Vec4) {
+                unsafe { gl::Uniform4f(gl::GetUniformLocation(self.id , name as *const i8),value.x, value.y, value.z, value.w); }
             }
 
             // todo: arguments here should be reviewed (value_ptr overhead? how does it relate to transpose arg?)
