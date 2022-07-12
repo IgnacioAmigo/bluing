@@ -1,18 +1,14 @@
 use egui::Checkbox;
 use egui_backend::{egui, gl, sdl2};
 use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
-use glm::Mat4;
 use render::renderer::SpriteRenderer;
 use resources::Resources;
-use sdl2::mouse::{MouseState, self};
-use sdl2::sys::{SDL_GetMouseState, SDL_PumpEvents};
-use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::time::Instant;
 // Alias the backend to something less mouthful
 use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
-use render::{data, texture};
+use render::{data};
 use render::data::AttributedVertex;
 use nalgebra_glm as glm;
 
@@ -152,6 +148,8 @@ fn main() {
             for event in event_pump.poll_iter() {
                 match event {
                     Event::MouseMotion { x, y , mousestate ,  ..} => {
+                        sprite_pos.0 = x;
+                        sprite_pos.1 = y;
                         egui_state.process_input(&window, event, &mut painter);
                     },
                     Event::Quit { .. } => break 'running,
@@ -162,6 +160,8 @@ fn main() {
                 }
             }
         }
+
+        // test triangle vbo
 
         shader_program.set_used();
         vao.bind();
@@ -174,9 +174,11 @@ fn main() {
         }
         vao.unbind();
 
+
+        // todo: this is all hacky and hardcoded, interface needs to be decided still
         i = i + 0.3;
-        let tile = 12;
-        sprite_renderer.render(&map, 200.0 as f32, 100 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 1.0, glm::vec4((16.0/map.width_f()) * 12 as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
+        let tile = slider as i32;
+        sprite_renderer.render(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * tile as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
         sprite_renderer.render(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
         window.gl_swap_window();

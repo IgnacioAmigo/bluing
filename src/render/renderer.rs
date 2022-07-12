@@ -62,8 +62,12 @@ impl SpriteRenderer {
 
         let radians = f32::to_radians(rotation_angle);
         let model = glm::rotate(&model,radians,&glm::vec3(0.0, 0.0, 1.0));
-        let model = glm::translate(&model,&glm::vec3(-texture.width_f()* scale* 0.5, -texture.height_f() * scale * 0.5,0.0));
-        let model = glm::scale(&model,&glm::vec3(texture.width_f() * scale ,texture.height_f() * scale,0.0));
+        let model = glm::translate(&model,&glm::vec3(-texture.width_f()* scale * 0.5, -texture.height_f() * scale * 0.5,0.0));
+        let model = glm::scale(&model,
+            &glm::vec3(texture.width_f() * scale * (sub_tex_coords.z) ,
+                            texture.height_f() * scale * (sub_tex_coords.w),
+                            0.0)
+        );
         
         self.program.set_mat4("model\0".as_ptr(), model);
         self.program.set_vector4f("subTexCoords\0".as_ptr(), sub_tex_coords);
