@@ -1,9 +1,9 @@
 use std::ffi::CString;
 
 use crate::resources::Resources;
-use super::{data::AttributedVertex, GlProgram, buffer::VertexArray, buffer::VertexBuffer, texture::Texture};
+use super::{data::AttributedVertex, GlProgram, buffer::VertexArray, buffer::VertexBuffer, texture::Texture, subtexture::Subtexture};
 
-use nalgebra_glm as glm;
+use glm::{self, Vec3};
 
 #[derive(VertexAttribPointers)]
 #[derive(Copy, Clone, Debug)]
@@ -54,7 +54,11 @@ impl SpriteRenderer {
         Ok(SpriteRenderer{program, vao, vbo})
     }
 
-    pub fn render(&self, texture: &Texture, x: f32, y: f32, rotation_angle: f32, color: glm::Vec3, scale: f32, sub_tex_coords: glm::Vec4) {
+    pub fn draw_subtexture(&self, subtexture: &Subtexture, position: glm::Vec2) {
+        self.draw_quad(subtexture.texture(), position.x, position.y, 0.0, glm::vec3(1.0,1.0,1.0), 1.0, subtexture.get_normalized_rect());
+    }
+
+    pub fn draw_quad(&self, texture: &Texture, x: f32, y: f32, rotation_angle: f32, color: glm::Vec3, scale: f32, sub_tex_rect: glm::Vec4) {
         self.program.set_used();
         let model = glm::Mat4::identity();
         let model = glm::translate(&model,&glm::vec3(x,y,0.0));
@@ -64,13 +68,13 @@ impl SpriteRenderer {
         let model = glm::rotate(&model,radians,&glm::vec3(0.0, 0.0, 1.0));
         let model = glm::translate(&model,&glm::vec3(-texture.width_f()* scale * 0.5, -texture.height_f() * scale * 0.5,0.0));
         let model = glm::scale(&model,
-            &glm::vec3(texture.width_f() * scale * (sub_tex_coords.z) ,
-                            texture.height_f() * scale * (sub_tex_coords.w),
+            &glm::vec3(texture.width_f() * scale * (sub_tex_rect.z) ,
+                            texture.height_f() * scale * (sub_tex_rect.w),
                             0.0)
         );
         
         self.program.set_mat4("model\0".as_ptr(), model);
-        self.program.set_vector4f("subTexCoords\0".as_ptr(), sub_tex_coords);
+        self.program.set_vector4f("subTexCoords\0".as_ptr(), sub_tex_rect);
         self.program.set_vector3f("spriteColor\0".as_ptr(), color);
 
         

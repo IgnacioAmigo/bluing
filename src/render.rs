@@ -4,13 +4,14 @@
     use std::iter::Iterator;
     use crate::resources::{self, Resources};
     use crate::render::shader::Shader;
-    use nalgebra_glm as glm;
+    use glm;
 
     mod shader;
     pub mod texture;
+    pub mod subtexture;
     pub mod data;
     pub mod buffer;
-    pub mod renderer;
+    pub mod renderer; 
 
     const EXTENSIONS: [(&str,gl::types::GLenum); 2] = [(".vert", gl::VERTEX_SHADER),(".frag", gl::FRAGMENT_SHADER)];
 

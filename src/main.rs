@@ -2,6 +2,7 @@ use egui::Checkbox;
 use egui_backend::{egui, gl, sdl2};
 use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
 use render::renderer::SpriteRenderer;
+use render::subtexture::Subtexture;
 use resources::Resources;
 use std::path::Path;
 use std::time::Instant;
@@ -10,7 +11,7 @@ use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
 use render::{data};
 use render::data::AttributedVertex;
-use nalgebra_glm as glm;
+use glm;
 
 use render::buffer;
 
@@ -68,7 +69,7 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     let mut test_str: String =
-        "A text box to write in. Cut, copy, paste commands are available.".to_owned();
+        "".to_owned();
 
     let mut enable_vsync = false;
     let mut quit = false;
@@ -86,6 +87,8 @@ fn main() {
 
     let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
     let map = res.load_texture("tiles/grass.png").expect("error loading test.png to texture");
+
+    let first_tile = Subtexture::from_tiles(&map, 8,0, glm::vec2(16.0,16.0));
 
     let vertices: Vec<Vertex> = vec![
         Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
@@ -174,12 +177,12 @@ fn main() {
         }
         vao.unbind();
 
-
         // todo: this is all hacky and hardcoded, interface needs to be decided still
         i = i + 0.3;
         let tile = slider as i32;
-        sprite_renderer.render(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * tile as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
-        sprite_renderer.render(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
+        sprite_renderer.draw_quad(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * tile as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
+        sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
+        sprite_renderer.draw_quad(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
         window.gl_swap_window();
         if quit {

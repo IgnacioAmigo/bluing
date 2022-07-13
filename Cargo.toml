@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sdl2 = "*"
+sdl2 = { version = "*", features= ["bundled"] }
 gl = "0.14"
 egui = "*"
 egui_sdl2_gl = "*"
 stb_image = "*"
-nalgebra-glm = "*" 
+glm = {version = "*",package = "nalgebra-glm"}
 render_derive = { path = "render_derive" }
 
 [build-dependencies]

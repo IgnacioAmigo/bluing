@@ -2,7 +2,7 @@ use gl;
 use std;
 use std::ffi::{CString, CStr};
 use crate::resources::{Resources};
-use nalgebra_glm as glm;
+use glm;
 
 pub struct Shader {
     id: gl::types::GLuint,
