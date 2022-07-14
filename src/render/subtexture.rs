@@ -18,7 +18,7 @@ impl<'a> Subtexture<'a> {
     }
 
     pub fn from_tiles(texture: &'a Texture, tile_index_x: u16,tile_index_y : u16, tile_dimensions :glm::Vec2) -> Subtexture {
-        let start_coords_normalized = glm::vec2(tile_index_x as f32 * tile_dimensions.x / texture.width_f(), tile_index_y as f32 * tile_dimensions.y / texture.width_f());
+        let start_coords_normalized = glm::vec2(tile_index_x as f32 * tile_dimensions.x / texture.width_f(), tile_index_y as f32 * tile_dimensions.y / texture.height_f());
         let dimensions_normalized = glm::vec2(tile_dimensions.x / texture.width_f(), tile_dimensions.y / texture.height_f());
 
         Subtexture {texture, normalized_rect: glm::vec4(start_coords_normalized.x, start_coords_normalized.y, dimensions_normalized.x,dimensions_normalized.y)}

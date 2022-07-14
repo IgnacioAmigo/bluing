@@ -88,7 +88,7 @@ fn main() {
     let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
     let map = res.load_texture("tiles/grass.png").expect("error loading test.png to texture");
 
-    let first_tile = Subtexture::from_tiles(&map, 8,0, glm::vec2(16.0,16.0));
+    let first_tile = Subtexture::from_tiles(&map, 9,6, glm::vec2(16.0,16.0));
 
     let vertices: Vec<Vertex> = vec![
         Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
