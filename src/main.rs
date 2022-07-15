@@ -1,9 +1,9 @@
-use egui::Checkbox;
 use egui_backend::{egui, gl, sdl2};
 use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
 use render::renderer::SpriteRenderer;
 use render::subtexture::Subtexture;
 use resources::Resources;
+use sdl2::keyboard::Keycode;
 use std::path::Path;
 use std::time::Instant;
 // Alias the backend to something less mouthful
@@ -41,7 +41,7 @@ fn main() {
     {
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-        gl_attr.set_context_version(3, 3);
+        gl_attr.set_context_version(3, 0);
     }
     let mut i = 0.0;
 
@@ -52,22 +52,15 @@ fn main() {
             SCREEN_HEIGHT,
         )
         .opengl()
+        .allow_highdpi()
         .build()
         .unwrap();
 
     // Create a window context
     let _ctx = window.gl_create_context().unwrap();
-    // Init egui stuff
-    let shader_ver = ShaderVersion::Default;
-    // On linux use GLES SL 100+, like so:
-    // let shader_ver = ShaderVersion::Adaptive;
-    
-    let (mut painter, mut egui_state) =
-        egui_backend::with_sdl2(&window, shader_ver, DpiScaling::Custom(1.25));
-    
-    let mut egui_ctx = egui::CtxRef::default();
-    let mut event_pump = sdl_context.event_pump().unwrap();
+    gl::load_with(|s| video.gl_get_proc_address(s) as _);
 
+    let mut event_pump = sdl_context.event_pump().unwrap();
     let mut test_str: String =
         "".to_owned();
 
@@ -75,11 +68,18 @@ fn main() {
     let mut quit = false;
     let mut slider = 0.0;
 
-    window
-        .subsystem()
-        .gl_set_swap_interval(SwapInterval::VSync)
-        .unwrap();
+    window.subsystem()
+          .gl_set_swap_interval(SwapInterval::VSync)
+          .unwrap();
 
+    let mut imgui = imgui::Context::create();
+    imgui.set_ini_filename(None);
+    
+    
+    let mut imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui, &window);
+    let renderer = imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
+    let mut last_frame = Instant::now();
+      
     let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
     let shader_program = render::GlProgram::from_res(&res, "shaders/triangle").expect("Failed to load triangle shader asset");
 
@@ -117,54 +117,40 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    let start_time = Instant::now();
-    let mut frame_time = Instant::now();
     'running: loop {
-
-        egui_state.input.time = Some(start_time.elapsed().as_secs_f64());
-        egui_ctx.begin_frame(egui_state.input.take());
-
-        egui::CentralPanel::default().show(&egui_ctx, |ui| {
-            ui.label(" ");
-            ui.text_edit_multiline(&mut test_str);
-            ui.label(format!("frame time:{}",frame_time.elapsed().as_millis()));
-            ui.add(egui::Slider::new(&mut slider, 0.0..=50.0).text("Slider"));
-            ui.label(" ");
-            ui.add(Checkbox::new(&mut enable_vsync, "Enable vsync?"));
-            ui.separator();
-            if ui.button("Quit?").clicked() {
-                quit = true;
-            }
-        });
-
-        frame_time = Instant::now();
-
-        let (egui_output, paint_cmds) = egui_ctx.end_frame();
-        // Process ouput
-        egui_state.process_output(&window, &egui_output);
-
-        let paint_jobs = egui_ctx.tessellate(paint_cmds);
-
-        {
-            painter.paint_jobs(None, paint_jobs, &egui_ctx.font_image());
-            
-            for event in event_pump.poll_iter() {
-                match event {
-                    Event::MouseMotion { x, y , mousestate ,  ..} => {
-                        sprite_pos.0 = x;
-                        sprite_pos.1 = y;
-                        egui_state.process_input(&window, event, &mut painter);
-                    },
-                    Event::Quit { .. } => break 'running,
-                    _ => {
-                        // Process input event
-                        egui_state.process_input(&window, event, &mut painter);
-                    }
-                }
+        
+        for event in event_pump.poll_iter() {
+            imgui_sdl2.handle_event(&mut imgui, &event);
+            if imgui_sdl2.ignore_event(&event) { continue; }
+    
+            match event {
+            Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                break 'running
+            },
+            _ => {}
             }
         }
+  
+        imgui_sdl2.prepare_frame(imgui.io_mut(), &window, &event_pump.mouse_state());
+
+        let now = Instant::now();
+        let delta = now - last_frame;
+        let delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
+        last_frame = now;
+        imgui.io_mut().delta_time = delta_s;
+
+        let ui = imgui.frame();
+        ui.show_demo_window(&mut true);
 
         // test triangle vbo
+        unsafe {
+            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+          }
+      
+
+        imgui_sdl2.prepare_render(&ui, &window);
+        renderer.render(ui);
 
         shader_program.set_used();
         vao.bind();
@@ -190,4 +176,3 @@ fn main() {
         }
     }
 }
-

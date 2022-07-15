@@ -14,11 +14,9 @@ stb_image = "*"
 glm = {version = "*",package = "nalgebra-glm"}
 render_derive = { path = "render_derive" }
 
-imgui = "*"
-imgui-glow-renderer = { path = "../imgui-glium-renderer" }
-imgui-sdl2-support = { path = "../imgui-sdl2-support" }
-glow = { version = "*", default-features = true }
-
+imgui = {version = "*"}
+imgui-sdl2 = "*"
+imgui-opengl-renderer = "*"
 
 [build-dependencies]
 walkdir = "*"

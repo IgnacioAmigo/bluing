@@ -27,12 +27,15 @@ impl Shader {
 
     pub fn from_res(res: &Resources, name: &str) -> Result<Shader, String> {
         
-        // TODO: this should not panic, and instead print to console or debug log 
+        // TODO: this should not panic, and instead print to console or debug log
+        println!("about to do shader {}", name);
+
         let shader_type = super::EXTENSIONS.iter()
         .find(|&&x|
             name.ends_with(x.0)
         ).map(|&x| x.1).expect(&format!("Couldn't determine shader type for {}",name));
         let source = res.load_cstring(name).expect("Error loading shader");
+        println!("returned shader {}", source.to_string_lossy());
         Shader::from_source(&source, shader_type)
     }
 
