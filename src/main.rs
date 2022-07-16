@@ -17,8 +17,8 @@ use render::buffer;
 
 #[macro_use] extern crate render_derive;
 
-const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 600;
+const SCREEN_WIDTH: u32 = 1800;
+const SCREEN_HEIGHT: u32 = 900;
 
 mod render;
 mod resources;
@@ -74,8 +74,6 @@ fn main() {
 
     let mut imgui = imgui::Context::create();
     imgui.set_ini_filename(None);
-    
-    
     let mut imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui, &window);
     let renderer = imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
     let mut last_frame = Instant::now();
@@ -83,7 +81,7 @@ fn main() {
     let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
     let shader_program = render::GlProgram::from_res(&res, "shaders/triangle").expect("Failed to load triangle shader asset");
 
-    let sprite_renderer = SpriteRenderer::from_res(&res).expect("error creating sprite renderer");
+    let sprite_renderer = SpriteRenderer::from_res(&res, glm::vec2(SCREEN_WIDTH as f32, SCREEN_HEIGHT as f32)).expect("error creating sprite renderer");
 
     let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
     let map = res.load_texture("tiles/grass.png").expect("error loading test.png to texture");
@@ -149,9 +147,7 @@ fn main() {
           }
       
 
-        imgui_sdl2.prepare_render(&ui, &window);
-        renderer.render(ui);
-
+       
         shader_program.set_used();
         vao.bind();
         unsafe {
@@ -170,7 +166,13 @@ fn main() {
         sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
         sprite_renderer.draw_quad(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
+        sprite_renderer.draw_rect(glm::vec4(20.0,300.0,100.0,100.0), glm::vec3(0.4,0.3,0.7));
+
+        imgui_sdl2.prepare_render(&ui, &window);
+        renderer.render(ui);
+
         window.gl_swap_window();
+
         if quit {
             break 'running;
         }
