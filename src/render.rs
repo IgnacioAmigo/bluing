@@ -12,6 +12,7 @@
     pub mod data;
     pub mod buffer;
     pub mod renderer; 
+//    pub mod line_segment_renderer; 
 
     const EXTENSIONS: [(&str,gl::types::GLenum); 2] = [(".vert", gl::VERTEX_SHADER),(".frag", gl::FRAGMENT_SHADER)];
 
@@ -67,6 +68,13 @@
             }
             
             pub fn from_res(res: &resources::Resources, name: &str) -> Result<GlProgram,String> {
+                // if file extension is glsl, assume both shaders in the same file
+                if name.ends_with(".glsl") {
+                    println!("reading shaders from single file");
+                    let shaders = Shader::from_single_source(res, name)?;
+                    return GlProgram::from_shaders(&shaders)
+                }
+
                 let file_extensions = EXTENSIONS.map(|x| x.0);
                 
                 let shaders = file_extensions.map(|x|{

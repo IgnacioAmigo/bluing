@@ -6,37 +6,36 @@ use super::{data::AttributedVertex, GlProgram, buffer::{VertexArray, ElementBuff
 use glm::{self, Vec3};
 use sdl2::pixels::Color;
 
+// todo: rename/refactor this into Shape Renderer?
+// todo: this should maybe be collapsed into one type (SpriteVertex/LineVertex, etc)
 #[derive(VertexAttribPointers)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
-struct SpriteVertex {
+struct LineVertex {
     #[location = 0]
-    postex: super::data::f32_f32_f32_f32,
+    pos: super::data::f32_f32_f32_f32,
 }
 
-pub struct SpriteRenderer {
+pub struct LineSegmentRenderer {
     program: GlProgram,
-    vao: VertexArray,
-    vbo: VertexBuffer,
+    line_vao: VertexArray,
+    line_vbo: VertexBuffer,
 
     rect_veo: ElementBuffer,
     ortho_matrix: glm::Mat4
 }
 
-impl SpriteRenderer {
-    pub fn from_res(res: &Resources, screen_dimensions: glm::Vec2) -> Result<SpriteRenderer, String>{
-        let vertices: Vec<SpriteVertex> = vec![
-            SpriteVertex { postex: (0.0,  0.0, 0.0, 0.0).into()},  // top
-            SpriteVertex { postex: (0.0, 1.0, 0.0, 1.0,).into()}, // bottom right
-            SpriteVertex { postex: (1.0, 0.0, 1.0, 0.0).into()}, // bottom left
-            
-            SpriteVertex { postex: (0.0,  1.0, 0.0, 1.0).into()},  
-            SpriteVertex { postex: (1.0,  1.0, 1.0, 1.0).into()},  
-            SpriteVertex { postex: (1.0,  0.0, 1.0, 0.0).into()},  
+impl LineSegmentRenderer {
+    pub fn from_res(res: &Resources, screen_dimensions: glm::Vec2) -> Result<LineSegmentRenderer, String>{
+        let vertices: Vec<LineVertex> = vec![
+            LineVertex { pos: (0.0,  0.0, 0.0, 0.0).into()},  // top
+            LineVertex { pos: (0.0, 1.0, 0.0, 1.0,).into()}, // bottom right
+            LineVertex { pos: (1.0, 0.0, 1.0, 0.0).into()}, // bottom left
+            LineVertex { pos: (0.0,  1.0, 0.0, 1.0).into()},  
             ];
             
                 
-        let program = GlProgram::from_res(res,"shaders/texture2d.glsl")?;
+        let program = GlProgram::from_res(res,"shaders/texture2d")?;
         let vbo: VertexBuffer = VertexBuffer::new();
         let vao = VertexArray::new();
 
@@ -65,7 +64,7 @@ impl SpriteRenderer {
         let ortho_matrix = glm::ortho(0.0, screen_dimensions.x, screen_dimensions.y, 0.0, -1.0, 1.0);
         program.set_mat4("projection\0".as_ptr(), ortho_matrix);
 
-        Ok(SpriteRenderer{program, vao, vbo, rect_veo, ortho_matrix})
+        Ok(LineSegmentRenderer{program, vao, vbo, rect_veo, ortho_matrix})
     }
 
     pub fn draw_subtexture(&self, subtexture: &Subtexture, position: glm::Vec2) {

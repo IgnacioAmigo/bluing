@@ -61,12 +61,8 @@ fn main() {
     gl::load_with(|s| video.gl_get_proc_address(s) as _);
 
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut test_str: String =
-        "".to_owned();
 
-    let mut enable_vsync = false;
     let mut quit = false;
-    let mut slider = 0.0;
 
     window.subsystem()
           .gl_set_swap_interval(SwapInterval::VSync)
@@ -161,8 +157,8 @@ fn main() {
 
         // todo: this is all hacky and hardcoded, interface needs to be decided still
         i = i + 0.3;
-        let tile = slider as i32;
-        sprite_renderer.draw_quad(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * tile as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
+
+        sprite_renderer.draw_quad(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * 10 as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
         sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
         sprite_renderer.draw_quad(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 

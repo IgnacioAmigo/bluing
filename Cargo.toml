@@ -17,6 +17,7 @@ render_derive = { path = "render_derive" }
 imgui = {version = "*"}
 imgui-sdl2 = "*"
 imgui-opengl-renderer = "*"
+legion = "0.4.0"
 
 
 [build-dependencies]

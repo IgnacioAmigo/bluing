@@ -2,6 +2,7 @@ use gl;
 
 pub type VertexBuffer = Buffer<{gl::ARRAY_BUFFER}>;
 pub type ElementBuffer = Buffer<{gl::ELEMENT_ARRAY_BUFFER}>;
+pub type SSVertexBuffer = Buffer<{gl::SHADER_STORAGE_BUFFER}>;
 
 pub struct Buffer<const B: gl::types::GLuint> {
     vbo: gl::types::GLuint,
