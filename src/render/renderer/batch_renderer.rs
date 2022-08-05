@@ -116,14 +116,14 @@ impl BatchRenderer {
     pub fn draw_quad(&mut self, texture: &Texture, position: glm::Vec3, color: glm::Vec4, scale: f32, _sub_tex_rect: glm::Vec4) {
         let quad_positions = [
             glm::vec3(0.0, 0.0, 0.0), 
-            glm::vec3(1.0, 0.0, 0.0), 
-            glm::vec3(1.0, 1.0, 0.0), 
-            glm::vec3(0.0, 1.0, 0.0)
+            glm::vec3(1.0, 0.0, 0.0) * scale, 
+            glm::vec3(1.0, 1.0, 0.0) * scale, 
+            glm::vec3(0.0, 1.0, 0.0) * scale
         ];
         
         let model = glm::Mat4::identity();
         let model = glm::translate(&model,&position);
-      //  let model = glm::translate(&model,&glm::vec3(texture.width_f() * scale* 0.5, texture.height_f() * scale* 0.5,0.0));
+        //let model = glm::scale(&model,&glm::vec3(scale, scale,0.0));
         
 /*         let model = glm::scale(&model,
             &glm::vec3(texture.width_f() * scale * (sub_tex_rect.z) ,
@@ -131,11 +131,10 @@ impl BatchRenderer {
                             0.0)
         ); */
 
-        
+        let real_position = model * glm::vec4(position.x, position.y, position.z, 0.0);
         for i in quad_positions {
-            let real_position = model * glm::vec4(position.x * i.x, position.y * i.y, position.z, 0.0);
             let new_quad_vertex = QuadVertex {
-                pos: glm::vec3(real_position.x, real_position.y, real_position.z),
+                pos: position + i,//glm::vec3(real_position.x * i.x, real_position.y * i.y, real_position.z * i.z),
                 color: color,
                 tex_coords: i.xy(),
                 texture_id: 0.0,

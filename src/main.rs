@@ -169,16 +169,15 @@ fn main() {
         sprite_renderer.draw_circle(glm::vec4(0.0,00.0,1600.0,900.0), glm::vec3(0.4,0.3,0.7));
  
         batch_renderer.begin_scene();
-        batch_renderer.draw_quad(&map, glm::vec3(24.3,100.4, 1.0), glm::vec4(0.3,0.1,0.0, 0.9),1.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
-        batch_renderer.draw_quad(&map, glm::vec3(240.3,10.4, 1.0), glm::vec4(0.3,0.3,0.5, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
-        batch_renderer.draw_quad(&map, glm::vec3(100.3,400.4, 1.0), glm::vec4(0.1,0.3,0.5, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
-        batch_renderer.draw_quad(&map, glm::vec3(40.3,100.4, 1.0), glm::vec4(0.3,0.2,0.9, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        for i in 0..699 {
+            batch_renderer.draw_quad(&map, glm::vec3((i / 11 * 32) as f32,((i % 11) * 32) as f32, 1.0), glm::vec4(0.2 + (i % 2) as f32,0.1,0.1, 0.9),23.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        }
         batch_renderer.end_scene();
 
 
 
-//        imgui_sdl2.prepare_render(&ui, &window);
-        //renderer.render(ui);
+        imgui_sdl2.prepare_render(&ui, &window);
+        renderer.render(ui);
 
         window.gl_swap_window();
 
