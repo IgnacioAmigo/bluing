@@ -2,7 +2,7 @@ use gl;
 
 pub type VertexBuffer = Buffer<{gl::ARRAY_BUFFER}>;
 pub type ElementBuffer = Buffer<{gl::ELEMENT_ARRAY_BUFFER}>;
-pub type SSVertexBuffer = Buffer<{gl::SHADER_STORAGE_BUFFER}>;
+//pub type SSVertexBuffer = Buffer<{gl::SHADER_STORAGE_BUFFER}>;
 
 pub struct Buffer<const B: gl::types::GLuint> {
     vbo: gl::types::GLuint,
@@ -36,6 +36,29 @@ impl<const B: gl::types::GLuint> Buffer<B> {
                 data.as_ptr() as *const gl::types::GLvoid,
                 gl::STATIC_DRAW
             )
+        }
+    }
+
+    pub fn upload_data_dynamic_draw<T>(&self, data: &Vec<T>) {
+        unsafe {
+            gl::BufferData( 
+                B,
+                (data.capacity() * std::mem::size_of::<T>()) as gl::types::GLsizeiptr,
+                std::ptr::null() as *const _,
+                gl::DYNAMIC_DRAW
+            )
+        }
+    }
+
+    pub fn upload_subdata_dynamic_draw<T>(&self, data: &[T], amount_of_verts: usize) {
+        unsafe {
+       //     println!("subdata upload {}, deref {:p}", amount_of_verts * std::mem::size_of::<T>(), (data.get(0).expect("msg").as_ptr() as *const f32)  );
+            gl::BufferSubData( 
+                B,
+                0,
+                (amount_of_verts * std::mem::size_of::<T>()) as gl::types::GLsizeiptr,
+                data.as_ptr() as *const gl::types::GLvoid,
+            );
         }
     }
 }

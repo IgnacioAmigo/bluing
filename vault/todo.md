@@ -1,0 +1,6 @@
+- Add 2D circle renderer
+    - [x] Add way of adding fragment and vertex shader from single file (#type directive?)
+    - [ ]  Add alpha component to renderer functions 
+-  [ ] Integrate ECS for component
+-  [ ] Integrate component view in imgui
+-  [ ]  Batch render textures/circles

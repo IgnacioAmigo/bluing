@@ -34,7 +34,7 @@ impl Shader {
 
         // returns next ocurrence of _index_ or string length if none found
         fn find_after(source: &str, index: usize) -> usize {
-            source.match_indices("!").find_map(|(i, _)| (i > index).then(|| i)).or(Some(source.as_bytes().len())).unwrap()
+            source.match_indices("\n!").find_map(|(i, _)| (i > index).then(|| i)).or(Some(source.as_bytes().len())).unwrap()
         }
 
         // todo: this is all very inefficient; no need for CString at beginning of function and then this

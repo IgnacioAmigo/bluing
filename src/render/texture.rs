@@ -49,7 +49,12 @@ impl Texture {
         }
 
         Ok(texture)
-    } 
+    }
+    
+    pub fn with_white_new() -> Result<Texture, String>{
+        // todo: maybe we should assert that it was not created before?
+        return Texture::from_data(vec![0x0], 1, 1);
+    }
 
     pub fn bind(&self) {
         unsafe { gl::BindTexture(gl::TEXTURE_2D, self.id); }

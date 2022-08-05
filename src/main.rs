@@ -1,6 +1,7 @@
-use egui_backend::{egui, gl, sdl2};
-use egui_backend::{sdl2::event::Event, DpiScaling, ShaderVersion};
+use egui_backend::{gl, sdl2};
+use egui_backend::{sdl2::event::Event};
 use render::renderer::SpriteRenderer;
+use render::renderer::batch_renderer::BatchRenderer;
 use render::subtexture::Subtexture;
 use resources::Resources;
 use sdl2::keyboard::Keycode;
@@ -9,7 +10,6 @@ use std::time::Instant;
 // Alias the backend to something less mouthful
 use egui_sdl2_gl as egui_backend;
 use sdl2::video::SwapInterval;
-use render::{data};
 use render::data::AttributedVertex;
 use glm;
 
@@ -17,7 +17,7 @@ use render::buffer;
 
 #[macro_use] extern crate render_derive;
 
-const SCREEN_WIDTH: u32 = 1800;
+const SCREEN_WIDTH: u32 = 1600;
 const SCREEN_HEIGHT: u32 = 900;
 
 mod render;
@@ -28,9 +28,9 @@ mod resources;
 #[repr(C, packed)]
 struct Vertex {
     #[location = 0]
-    pos: data::f32_f32_f32,
+    pos: glm::Vec3,
     #[location = 1]
-    clr: data::f32_f32_f32,
+    clr: glm::Vec3,
 }
 
 fn main() {
@@ -41,7 +41,7 @@ fn main() {
     {
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-        gl_attr.set_context_version(3, 0);
+        gl_attr.set_context_version(4, 0);
     }
     let mut i = 0.0;
 
@@ -75,9 +75,10 @@ fn main() {
     let mut last_frame = Instant::now();
       
     let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
-    let shader_program = render::GlProgram::from_res(&res, "shaders/triangle").expect("Failed to load triangle shader asset");
+    let shader_program = render::GlProgram::from_res(&res, "shaders/triangle.glsl").expect("Failed to load triangle shader asset");
 
     let sprite_renderer = SpriteRenderer::from_res(&res, glm::vec2(SCREEN_WIDTH as f32, SCREEN_HEIGHT as f32)).expect("error creating sprite renderer");
+    let mut batch_renderer = BatchRenderer::from_res(&res, glm::vec2(SCREEN_WIDTH as f32, SCREEN_HEIGHT as f32), 1024).expect("error creating sprite renderer");
 
     let texture = res.load_texture("sprites/test.png").expect("error loading test.png to texture");
     let map = res.load_texture("tiles/grass.png").expect("error loading test.png to texture");
@@ -85,9 +86,9 @@ fn main() {
     let first_tile = Subtexture::from_tiles(&map, 9,6, glm::vec2(16.0,16.0));
 
     let vertices: Vec<Vertex> = vec![
-        Vertex { pos: (0.5, -0.5, 0.0).into(),  clr: (1.0, 0.0, 0.0).into() }, // bottom right
-        Vertex { pos: (-0.5, -0.5, 0.0).into(), clr: (0.0, 1.0, 0.0).into() }, // bottom left
-        Vertex { pos: (0.0,  0.5, 0.0).into(),  clr: (0.0, 0.0, 1.0).into() }  // top
+        Vertex { pos: glm::vec3(0.5, -0.5, 0.0),  clr: glm::vec3(1.0, 0.0, 0.0) }, // bottom right
+        Vertex { pos: glm::vec3(-0.5, -0.5, 0.0), clr: glm::vec3(0.0, 1.0, 0.0) }, // bottom left
+        Vertex { pos: glm::vec3(0.0,  0.5, 0.0),  clr: glm::vec3(0.0, 0.0, 1.0) }  // top
     ];
     
     let vbo = buffer::VertexBuffer::new();
@@ -109,6 +110,9 @@ fn main() {
     unsafe {
         gl::Viewport(0, 0, SCREEN_WIDTH as i32, SCREEN_HEIGHT as i32);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA,gl::ONE_MINUS_SRC_ALPHA);
     }
 
     'running: loop {
@@ -142,9 +146,7 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
           }
       
-
-       
-        shader_program.set_used();
+         shader_program.set_used();
         vao.bind();
         unsafe {
              gl::DrawArrays(
@@ -153,19 +155,30 @@ fn main() {
                  3,             // number of indices to be rendered
              );
         }
-        vao.unbind();
+        vao.unbind(); 
 
         // todo: this is all hacky and hardcoded, interface needs to be decided still
         i = i + 0.3;
+        //println!("quiere arrancar");
 
         sprite_renderer.draw_quad(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * 10 as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
         sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
         sprite_renderer.draw_quad(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
         sprite_renderer.draw_rect(glm::vec4(20.0,300.0,100.0,100.0), glm::vec3(0.4,0.3,0.7));
+        sprite_renderer.draw_circle(glm::vec4(0.0,00.0,1600.0,900.0), glm::vec3(0.4,0.3,0.7));
+ 
+        batch_renderer.begin_scene();
+        batch_renderer.draw_quad(&map, glm::vec3(24.3,100.4, 1.0), glm::vec4(0.3,0.1,0.0, 0.9),1.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        batch_renderer.draw_quad(&map, glm::vec3(240.3,10.4, 1.0), glm::vec4(0.3,0.3,0.5, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        batch_renderer.draw_quad(&map, glm::vec3(100.3,400.4, 1.0), glm::vec4(0.1,0.3,0.5, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        batch_renderer.draw_quad(&map, glm::vec3(40.3,100.4, 1.0), glm::vec4(0.3,0.2,0.9, 0.9),3.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+        batch_renderer.end_scene();
 
-        imgui_sdl2.prepare_render(&ui, &window);
-        renderer.render(ui);
+
+
+//        imgui_sdl2.prepare_render(&ui, &window);
+        //renderer.render(ui);
 
         window.gl_swap_window();
 
