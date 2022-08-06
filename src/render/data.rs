@@ -18,12 +18,12 @@ pub trait AttributedVertex {
 
 
 #[allow(non_camel_case_types)]
-pub type f32x2 = glm::Vec2;
+pub type _f32x2 = glm::Vec2;
 //pub struct f32x2(glm::Vec2); 
 #[allow(non_camel_case_types)]
-pub type f32x3 = glm::Vec3;
+pub type _f32x3 = glm::Vec3;
 #[allow(non_camel_case_types)]
-pub type f32x4 = glm::Vec4;
+pub type _f32x4 = glm::Vec4;
 
 impl AttributedVertex for f32 {
     fn amount_of_components() -> i32 { 1 }

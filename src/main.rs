@@ -34,8 +34,6 @@ struct Vertex {
 }
 
 fn main() {
-    let mut sprite_pos = (0,0);
-
     let sdl_context = sdl2::init().unwrap();
     let video = sdl_context.video().unwrap();
     {
@@ -138,7 +136,6 @@ fn main() {
         imgui.io_mut().delta_time = delta_s;
 
         let ui = imgui.frame();
-        ui.show_demo_window(&mut true);
 
         // test triangle vbo
         unsafe {
@@ -146,8 +143,9 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
           }
       
-         shader_program.set_used();
+        shader_program.set_used();
         vao.bind();
+
         unsafe {
              gl::DrawArrays(
                  gl::TRIANGLES, // mode
@@ -161,7 +159,7 @@ fn main() {
         i = i + 0.3;
         //println!("quiere arrancar");
 
-        sprite_renderer.draw_quad(&map, sprite_pos.0 as f32, sprite_pos.1 as f32, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * 10 as f32,0.0,(1.0/16.0),(16.0/map.height_f())));
+        sprite_renderer.draw_quad(&map, 400.0, 400.0, 0.0, glm::vec3(1.0,1.0,1.0), 10.0, glm::vec4((16.0/map.width_f()) * 10 as f32,0.0,1.0/16.0,16.0/map.height_f()));
         sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
         sprite_renderer.draw_quad(&texture, 650.0 as f32, 30 as f32, i, glm::vec3(1.0,1.0,1.0), 0.3, glm::vec4(i/100.0,0.0,1.0,1.0));
 
@@ -170,12 +168,13 @@ fn main() {
  
         batch_renderer.begin_scene();
         for i in 0..699 {
-            batch_renderer.draw_quad(&map, glm::vec3((i / 11 * 32) as f32,((i % 11) * 32) as f32, 1.0), glm::vec4(0.2 + (i % 2) as f32,0.1,0.1, 0.9),23.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+            batch_renderer.draw_quad(&map, glm::vec3((i / 11 * 32) as f32,((i % 11) * 32) as f32, 1.0), glm::vec4(0.2 + (i % 2) as f32,0.1,0.1, 0.4),23.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
         batch_renderer.end_scene();
 
-
-
+        ui.show_demo_window(&mut true);
+      //  ui.show_demo_window(&mut true);
+      //  ui.show_style_editor(&mut true);
         imgui_sdl2.prepare_render(&ui, &window);
         renderer.render(ui);
 
