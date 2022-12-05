@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 sdl2 = { version = "*", features= ["bundled"] }
 gl = "0.14"
-egui = "*"
+egui = "0.16"
 egui_sdl2_gl = "*"
+
 stb_image = "*"
 glm = {version = "*",package = "nalgebra-glm"}
 render_derive = { path = "render_derive" }
@@ -17,6 +18,7 @@ render_derive = { path = "render_derive" }
 imgui = {version = "*"}
 imgui-sdl2 = "*"
 imgui-opengl-renderer = "*"
+
 legion = "0.4.0"
 
 

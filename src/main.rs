@@ -1,11 +1,13 @@
 use egui_backend::{gl, sdl2};
 use egui_backend::{sdl2::event::Event};
+use imgui_sdl2::ImguiSdl2;
 use render::renderer::SpriteRenderer;
 use render::renderer::batch_renderer::BatchRenderer;
 use render::subtexture::Subtexture;
 use resources::Resources;
 use sdl2::keyboard::Keycode;
 use std::path::Path;
+use std::ptr::null_mut;
 use std::time::Instant;
 // Alias the backend to something less mouthful
 use egui_sdl2_gl as egui_backend;
@@ -42,6 +44,8 @@ fn main() {
         gl_attr.set_context_version(4, 0);
     }
     let mut i = 0.0;
+
+    let mut separation = 0.0;
 
     let window = video
         .window(
@@ -114,15 +118,17 @@ fn main() {
     }
 
     'running: loop {
-        
         for event in event_pump.poll_iter() {
-            imgui_sdl2.handle_event(&mut imgui, &event);
             if imgui_sdl2.ignore_event(&event) { continue; }
+            imgui_sdl2.handle_event(&mut imgui, &event);
     
             match event {
-            Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                break 'running
-            },
+                Event::KeyDown { keycode , .. } => {
+                    //break 'running
+                },
+                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    break 'running
+                },
             _ => {}
             }
         }
@@ -166,15 +172,23 @@ fn main() {
         sprite_renderer.draw_rect(glm::vec4(20.0,300.0,100.0,100.0), glm::vec3(0.4,0.3,0.7));
         sprite_renderer.draw_circle(glm::vec4(0.0,00.0,1600.0,900.0), glm::vec3(0.4,0.3,0.7));
  
+
         batch_renderer.begin_scene();
-        for i in 0..699 {
-            batch_renderer.draw_quad(&map, glm::vec3((i / 11 * 32) as f32,((i % 11) * 32) as f32, 1.0), glm::vec4(0.2 + (i % 2) as f32,0.1,0.1, 0.4),23.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
+
+        for i in 0..1023 {
+            batch_renderer.draw_quad(&map, glm::vec3((i / 27 * separation as i32) as f32,((i % 27) * separation as i32) as f32, 1.0), glm::vec4(0.2 + (i % 2) as f32,0.1,0.1, 0.4),23.0,glm::vec4(0.0, 0.0, 0.0, 0.0));
         }
         batch_renderer.end_scene();
 
-        ui.show_demo_window(&mut true);
-      //  ui.show_demo_window(&mut true);
-      //  ui.show_style_editor(&mut true);
+        let a = imgui::Window::new("Separation");
+        a.build(&ui,||{
+             let sl = imgui::Slider::new("asd",0.0,50.0);
+             sl.build(&ui, &mut separation);
+            }
+        );
+
+         ui.show_demo_window(&mut true);
+      
         imgui_sdl2.prepare_render(&ui, &window);
         renderer.render(ui);
 
@@ -184,4 +198,11 @@ fn main() {
             break 'running;
         }
     }
+}
+
+enum InputKey {
+    OpenEditor
+}
+struct InputState {
+    
 }
