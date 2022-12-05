@@ -1,7 +1,7 @@
 use gl;
 
-pub type VertexBuffer = Buffer<{gl::ARRAY_BUFFER}>;
-pub type ElementBuffer = Buffer<{gl::ELEMENT_ARRAY_BUFFER}>;
+pub type VertexBuffer = Buffer<{ gl::ARRAY_BUFFER }>;
+pub type ElementBuffer = Buffer<{ gl::ELEMENT_ARRAY_BUFFER }>;
 //pub type SSVertexBuffer = Buffer<{gl::SHADER_STORAGE_BUFFER}>;
 
 pub struct Buffer<const B: gl::types::GLuint> {
@@ -9,51 +9,55 @@ pub struct Buffer<const B: gl::types::GLuint> {
 }
 
 impl<const B: gl::types::GLuint> Buffer<B> {
-    pub fn new() -> Buffer<{B}> {
+    pub fn new() -> Buffer<{ B }> {
         let mut vbo: gl::types::GLuint = 0;
         println!("creado vbo {}", B);
         unsafe {
             gl::GenBuffers(1, &mut vbo);
         }
-        println!("creado vbo id {}", vbo );
+        println!("creado vbo id {}", vbo);
 
         Buffer { vbo }
     }
 
     pub fn bind(&self) {
-        unsafe { gl::BindBuffer(B, self.vbo); }
+        unsafe {
+            gl::BindBuffer(B, self.vbo);
+        }
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindBuffer(B, 0); }
+        unsafe {
+            gl::BindBuffer(B, 0);
+        }
     }
 
     pub fn upload_data_static_draw<T>(&self, data: &[T]) {
         unsafe {
-            gl::BufferData( 
+            gl::BufferData(
                 B,
                 (data.len() * std::mem::size_of::<T>()) as gl::types::GLsizeiptr,
                 data.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW
+                gl::STATIC_DRAW,
             )
         }
     }
 
     pub fn upload_data_dynamic_draw<T>(&self, data: &Vec<T>) {
         unsafe {
-            gl::BufferData( 
+            gl::BufferData(
                 B,
                 (data.capacity() * std::mem::size_of::<T>()) as gl::types::GLsizeiptr,
                 std::ptr::null() as *const _,
-                gl::DYNAMIC_DRAW
+                gl::DYNAMIC_DRAW,
             )
         }
     }
 
     pub fn upload_subdata_dynamic_draw<T>(&self, data: &[T], amount_of_verts: usize) {
         unsafe {
-       //     println!("subdata upload {}, deref {:p}", amount_of_verts * std::mem::size_of::<T>(), (data.get(0).expect("msg").as_ptr() as *const f32)  );
-            gl::BufferSubData( 
+            //     println!("subdata upload {}, deref {:p}", amount_of_verts * std::mem::size_of::<T>(), (data.get(0).expect("msg").as_ptr() as *const f32)  );
+            gl::BufferSubData(
                 B,
                 0,
                 (amount_of_verts * std::mem::size_of::<T>()) as gl::types::GLsizeiptr,
@@ -62,7 +66,7 @@ impl<const B: gl::types::GLuint> Buffer<B> {
         }
     }
 }
-/* 
+/*
 impl<const B:gl::types::GLuint> Drop for Buffer<B> {
     fn drop(&mut self) {
         unsafe {
@@ -78,17 +82,23 @@ pub struct VertexArray {
 impl VertexArray {
     pub fn new() -> VertexArray {
         let mut vao: gl::types::GLuint = 0;
-        unsafe {gl::GenVertexArrays(1, &mut vao);}
+        unsafe {
+            gl::GenVertexArrays(1, &mut vao);
+        }
 
         VertexArray { vao }
     }
 
     pub fn bind(&self) {
-        unsafe { gl::BindVertexArray(self.vao); }
+        unsafe {
+            gl::BindVertexArray(self.vao);
+        }
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindVertexArray(0); }
+        unsafe {
+            gl::BindVertexArray(0);
+        }
     }
 }
 

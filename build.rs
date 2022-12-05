@@ -5,7 +5,6 @@ use std::fs::{self, DirBuilder};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
@@ -51,7 +50,8 @@ fn copy(from: &Path, to: &Path) {
             if entry.file_type().is_dir() {
                 DirBuilder::new()
                     .recursive(true)
-                    .create(target_path).expect("failed to create target dir");
+                    .create(target_path)
+                    .expect("failed to create target dir");
             } else {
                 fs::copy(entry.path(), &target_path).expect("failed to copy");
             }
