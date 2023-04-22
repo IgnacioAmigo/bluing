@@ -1,6 +1,7 @@
 use egui_backend::sdl2::event::Event;
 use egui_backend::{gl, sdl2};
 
+use render::animation::Animation;
 use render::renderer::batch_renderer::BatchRenderer;
 use render::renderer::SpriteRenderer;
 use render::subtexture::Subtexture;
@@ -8,7 +9,7 @@ use resources::Resources;
 use sdl2::keyboard::Keycode;
 use std::path::Path;
 
-use std::time::Instant;
+use std::time::{Instant, Duration};
 // Alias the backend to something less mouthful
 use egui_sdl2_gl as egui_backend;
 
@@ -136,6 +137,22 @@ fn main() {
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
     }
 
+    // megaman sprites
+
+    let first = res
+        .load_texture("sprites/1.png")
+        .expect("error loading test.png to texture");
+    
+        let second = res
+        .load_texture("sprites/2.png")
+        .expect("error loading test.png to texture");
+    
+        let third = res
+        .load_texture("sprites/3.png")
+        .expect("error loading test.png to texture");
+    
+    let megaman = [first, second, third];
+    let mut megaman = Animation::new(&megaman, Duration::from_micros(160_666));
     'running: loop {
         for event in event_pump.poll_iter() {
             if imgui_sdl2.ignore_event(&event) {
@@ -144,9 +161,9 @@ fn main() {
             imgui_sdl2.handle_event(&mut imgui, &event);
 
             match event {
-                Event::KeyDown { keycode: _, .. } => {
+                //Event::KeyDown { keycode: _, .. } => {
                     //break 'running
-                }
+                //}
                 Event::Quit { .. }
                 | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
@@ -203,6 +220,29 @@ fn main() {
             ),
         );
         sprite_renderer.draw_subtexture(&first_tile, glm::vec2(200.0, 200.0));
+        
+        // melee
+        sprite_renderer.draw_quad(
+            &texture,
+            650.0_f32,
+            30_f32,
+            i,
+            glm::vec3(1.0, 1.0, 1.0),
+            0.3,
+            glm::vec4(i / 100.0, 0.0, 1.0, 1.0),
+        );
+
+        // sprite
+        sprite_renderer.draw_quad(
+            &megaman.get_frame(),
+            650.0_f32,
+            300_f32,
+            0.0,
+            glm::vec3(1.0, 1.0, 1.0),
+            10.0,
+            glm::vec4(0.0, 0.0, 1.0, 1.0),
+        );
+
         sprite_renderer.draw_quad(
             &texture,
             650.0_f32,

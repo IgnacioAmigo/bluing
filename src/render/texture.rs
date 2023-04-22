@@ -19,22 +19,11 @@ impl Texture {
         Texture { id, width, height }
     }
 
-    pub fn width(&self) -> usize {
-        self.width
-    }
-    pub fn height(&self) -> usize {
-        self.height
-    }
-
     pub fn width_f(&self) -> f32 {
         self.width as f32
     }
     pub fn height_f(&self) -> f32 {
         self.height as f32
-    }
-
-    pub fn id(&self) -> gl::types::GLuint {
-        self.id
     }
 
     pub fn from_data(data: Vec<u8>, width: usize, height: usize) -> Result<Texture, String> {
@@ -69,6 +58,7 @@ impl Texture {
                 gl::TEXTURE_WRAP_T,
                 gl::MIRRORED_REPEAT as GLint,
             );
+
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0 as GLint);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
@@ -82,7 +72,6 @@ impl Texture {
     }
 
     pub fn with_white_new() -> Result<Texture, String> {
-        // todo: maybe we should assert that it was not created before?
         Texture::from_data(vec![0x0], 1, 1)
     }
 

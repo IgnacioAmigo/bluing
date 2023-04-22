@@ -13,6 +13,7 @@ pub mod renderer;
 mod shader;
 pub mod subtexture;
 pub mod texture;
+pub mod animation;
 //    pub mod line_segment_renderer;
 
 const EXTENSIONS: [(&str, gl::types::GLenum); 2] =
@@ -23,7 +24,7 @@ pub struct GlProgram {
 }
 
 impl GlProgram {
-    pub fn from_shaders(shaders: &[Shader]) -> Result<GlProgram, String> {
+    pub fn with_shaders(shaders: &[Shader]) -> Result<GlProgram, String> {
         let program_id = unsafe { gl::CreateProgram() };
 
         for shader in shaders {
@@ -80,7 +81,7 @@ impl GlProgram {
         if name.ends_with(".glsl") {
             println!("reading shaders from single file");
             let shaders = Shader::from_single_source(res, name)?;
-            return GlProgram::from_shaders(&shaders);
+            return GlProgram::with_shaders(&shaders);
         }
 
         let file_extensions = EXTENSIONS.map(|x| x.0);
@@ -90,7 +91,7 @@ impl GlProgram {
             .into_iter()
             .collect::<Result<Vec<Shader>, String>>()?;
 
-        GlProgram::from_shaders(&shaders)
+        GlProgram::with_shaders(&shaders)
     }
 
     pub fn set_used(&self) {
@@ -159,8 +160,10 @@ impl Drop for GlProgram {
 fn create_whitespace_cstring_with_len(len: usize) -> CString {
     // allocate buffer of correct size
     let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
+
     // fill it with len spaces
     buffer.extend([b' '].iter().cycle().take(len));
+
     // convert buffer to CString
     unsafe { CString::from_vec_unchecked(buffer) }
 }
